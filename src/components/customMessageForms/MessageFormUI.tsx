@@ -1,38 +1,33 @@
 import Image from "next/image";
-import { useState } from "react";
-import { ChatObject, MessageFormProps } from "react-chat-engine-advanced";
+import {
+  ChangeEvent,
+  Dispatch,
+  KeyboardEvent,
+  SetStateAction,
+  useState,
+} from "react";
 import Dropzone from "react-dropzone";
 import { GrClose } from "react-icons/gr";
 import { HiPaperAirplane, HiPaperClip } from "react-icons/hi2";
 
 interface Props {
-  props: MessageFormProps;
-  activeChat: ChatObject | undefined;
+  setAttachment: Dispatch<SetStateAction<File | undefined>>;
+  message: string;
+  handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit: () => Promise<void>;
+  appendText?: string;
+  handleKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
 }
 
-const StandardMessageForm = ({ props, activeChat }: Props) => {
-  const [message, setMessage] = useState("");
-  const [attachment, setAttachment] = useState<File>();
+const MessageFormUI = ({
+  setAttachment,
+  message,
+  handleChange,
+  handleSubmit,
+  appendText,
+  handleKeyDown,
+}: Props) => {
   const [preview, setPreview] = useState("");
-
-  const handleSubmit = async () => {
-    const date = new Date()
-      .toISOString()
-      .replace("T", " ")
-      .replace("Z", `${Math.floor(Math.random() * 1000)}+00:00`);
-    const att = attachment ? [{ blob: attachment, file: attachment.name }] : [];
-    const form = {
-      attachments: att,
-      created: date,
-      sender_username: props.username,
-      text: message,
-      activeChatId: activeChat!.id,
-    };
-
-    props.onSubmit(form);
-    setMessage("");
-    setAttachment(undefined);
-  };
 
   return (
     <div className="flex px-4 space-x-2">
@@ -59,10 +54,19 @@ const StandardMessageForm = ({ props, activeChat }: Props) => {
           <input
             type="text"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
             placeholder="Send a message..."
             className="w-full p-2 outline-none"
           />
+          {appendText && (
+            <input
+              type="text"
+              disabled
+              value={`${message} ${appendText}`}
+              className="text-slate-400"
+            />
+          )}
         </div>
         <div className="flex items-center">
           <Dropzone
@@ -98,4 +102,4 @@ const StandardMessageForm = ({ props, activeChat }: Props) => {
     </div>
   );
 };
-export default StandardMessageForm;
+export default MessageFormUI;
